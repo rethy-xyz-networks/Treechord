@@ -1,4 +1,4 @@
-//! Configuration loading. Mirrors the keys and value forms of the AutoHotkey version.
+//! Configuration loading.
 
 use serde_json::Value;
 use std::collections::HashMap;
