@@ -1,0 +1,55 @@
+---
+name: Release
+
+# Publish a release on GitHub (Releases -> Draft a new release, tag like v0.1.0) and this
+# builds the x86_64, x86 and ARM64 Windows .exe files and attaches them to that release.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            arch: x86_64
+          - target: i686-pc-windows-msvc
+            arch: x86
+          - target: aarch64-pc-windows-msvc
+            arch: arm64
+    env:
+      TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      # Use the tag as the crate version, so the exe and the release match
+      - name: Set version from tag
+        run: sed -i "0,/^version = .*/s//version = \"${TAG#v}\"/" Cargo.toml
+
+      - name: Build exe
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Name the exe with the release version
+        run: cp "target/${{ matrix.target }}/release/treechord.exe" "Treechord-${TAG#v}-${{ matrix.arch }}.exe"
+
+      - name: Attach exe to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" "Treechord-${TAG#v}-${{ matrix.arch }}.exe" --clobber
