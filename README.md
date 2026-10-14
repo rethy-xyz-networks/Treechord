@@ -1,6 +1,6 @@
 # Treechord
 
-<img src="Treechord.ico" alt="Treechord" width="128">
+<img src="Treechord.png" alt="Treechord" width="128">
 
 Treechord is a keybind execution system for Windows. Press a key chord and Treechord checks whether the program is already open. If it is, the program is raised to the current view. If it isn't, the program is launched. If several windows of the program exist, each subsequent press cycles through them.
 
